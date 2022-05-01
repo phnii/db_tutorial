@@ -31,14 +31,14 @@ describe 'database' do
     ])
   end
 
-  it "prints error message when table is full" do
-    script = (1..1401).map do |i|
-      "insert #{i} user#{i} person#{i}@example.com"
-    end
-    script << ".exit"
-    result = run_script(script)
-    expect(result[-2]).to eq("db > Error: Table full.")
-  end
+  # it "prints error message when table is full" do
+  #   script = (1..1401).map do |i|
+  #     "insert #{i} user#{i} person#{i}@example.com"
+  #   end
+  #   script << ".exit"
+  #   result = run_script(script)
+  #   expect(result[-2]).to eq("db > Error: Table full.")
+  # end
 
   it "allows inserting strings that are the maximum length" do
     long_username = "a"*32
@@ -103,6 +103,45 @@ describe 'database' do
     expect(result2).to match_array([
       "db > (1, user1, person1@example.com)",
       "Executed.",
+      "db > ",
+    ])
+  end
+
+  it 'allows printing out the structure of a one-node bree' do
+    script = [3, 1, 2].map do |i|
+      "insert #{i} user#{i} person#{i}@example.com"
+    end
+    script << ".btree"
+    script << ".exit"
+    result = run_script(script)
+
+    expect(result).to match_array([
+      "db > Executed.",
+      "db > Executed.",
+      "db > Executed.",
+      "db > Tree:",
+      "leaf (size: 3)",
+      " - 0 : 3",
+      " - 1 : 1",
+      " - 2 : 2",
+      "db > "
+    ])
+  end
+
+  it 'prints constraints' do
+    script = [
+      ".constraints",
+      ".exit",
+    ]
+    result = run_script(script);
+    expect(result).to match_array([
+      "db > Constraints:",
+      "ROW_SIZE: 293",
+      "COMMON_NODE_HEADER_SIZE: 6",
+      "LEAF_NODE_HEADER_SIZE: 10",
+      "LEAF_NODE_CELL_SIZE: 297",
+      "LEAF_NODE_SPACE_FOR_CELLS: 4086",
+      "LEAF_NODE_MAX_CELLS: 13",
       "db > ",
     ])
   end
